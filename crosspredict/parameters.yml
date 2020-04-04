@@ -1,0 +1,70 @@
+
+iterator:
+  n_splits: 3
+  n_repeats: 3
+  random_state: 0
+  col_target: null # for stritified kfolds (cv_byclient = False)
+  col_client: 'userid' # for kfolds by client  (cv_byclient = True)
+  cv_byclient: True
+
+encoder:
+  # parameters for "iterator" double validation
+  n_splits: 3
+  n_repeats: 1
+  random_state: 0
+  col_target: null # for stritified kfolds (cv_byclient = False)
+  col_client: 'userid' # for kfolds by client  (cv_byclient = True)
+  cv_byclient: True
+
+  col_encoded: 'goal1'
+  cols: ['field1','field2','field3','field4']
+
+col_id: 'orderid'
+
+lightgbm_params:
+  cols_cat: ['field3','field2','field11','field23','field18','field20']
+  num_boost_round: 9999
+  early_stopping_rounds: 50
+  valid: True
+  random_state: 0
+  col_target: 'goal1'
+
+#  numboost: 228
+  params:
+    bagging_fraction: 0.849285747554019
+    bagging_freq: 5
+    bagging_seed: 0
+    boosting_type: 'gbdt'
+    data_random_seed: 0
+    drop_seed: 0
+    feature_fraction: 0.8212766928844304
+    feature_fraction_seed: 0
+    lambda_l1: 0.8955546599539566
+    lambda_l2: 1.4423261095989717
+    learning_rate: 0.03
+    max_bin: 255
+    max_depth: 43
+    metric: auc
+    min_data_in_leaf: 149
+    min_sum_hessian_in_leaf: 1.804477623298885
+    num_leaves: 363
+    objective: binary
+    seed: 0
+    verbose: -1
+
+xgboost:
+  params:
+    max_depth: 4
+    min_child_weight: 6
+    gamma: 0.05
+    colsample_bytree: 1
+    subsample: 0.6
+    scale_pos_weight: 1
+    objective: 'binary:logistic'
+    eta: 0.01
+    alpha: 0.9
+    lambda: 0.6
+    eval_metric: 'auc'
+    silent: 1
+    verbose_eval: False
+    seed: 0
