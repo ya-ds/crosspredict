@@ -5,7 +5,7 @@ import warnings
 
 
 class Iterator:
-    '''
+    """
     K-Fold data with 3 different crossvalidation strategies:
 
     - crossvalidation by users (RepeatedKFold) should pass col_client and cv_byclient=True
@@ -27,7 +27,8 @@ class Iterator:
         Column name for crossvalidation by users
     cv_byclient: bool, default=False
         flag if "crossvalidation by users" is needed
-    '''
+    """
+
     def __init__(self,
                  n_splits=5,
                  n_repeats=1,
@@ -35,22 +36,14 @@ class Iterator:
                  col_target=None,
                  col_client=None,
                  cv_byclient=False):
-        '''
-
-        :param n_splits: int, default=5
-        Number of folds. Must be at least 2.
-        :param n_repeats: int, default=1
-        Number of times cross-validator needs to be repeated.
-        :param random_state: int or RandomState instance, default=0
-        Pass an int for reproducible output across multiple
-        function calls.
-        :param col_target: str, default=None
-        Column name for stratified crossvalidation
-        :param col_client: str, default=None
-        Column name for crossvalidation by users
-        :param cv_byclient: bool, default=False
-        flag if "crossvalidation by users" is needed
-        '''
+        """
+        :param n_splits: int, default=5 Number of folds. Must be at least 2.
+        :param n_repeats: int, default=1 Number of times cross-validator needs to be repeated.
+        :param random_state: int or RandomState instance, default=0 Pass an int for reproducible output across multiple function calls.
+        :param col_target: str, default=None Column name for stratified crossvalidation
+        :param col_client: str, default=None Column name for crossvalidation by users
+        :param cv_byclient: bool, default=False flag if "crossvalidation by users" is needed
+        """
 
         if cv_byclient:
             assert col_client is not None, "You need provide col_client argument if cv_byclient=True (for RepeatedKFold by client)"
