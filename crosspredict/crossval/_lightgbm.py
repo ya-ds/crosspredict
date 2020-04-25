@@ -1,5 +1,3 @@
-
-from __future__ import annotations
 from hyperopt import hp
 from hyperopt.pyll import scope
 import lightgbm as lgb

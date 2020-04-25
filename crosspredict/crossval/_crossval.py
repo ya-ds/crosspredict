@@ -1,4 +1,3 @@
-from __future__ import annotations
 from abc import ABC, abstractmethod
 from hyperopt import STATUS_OK
 import numpy as np
@@ -148,7 +147,7 @@ class CrossModelFabric(ABC):
     def transform(self, df):
         x = df[self.feature_name]
         y = df[self.col_target]
-        df['PREDICT'] = 0
+        predict = pd.Series(index=df.index, data=np.zeros(df.shape[0]))
 
         for fold, (train, val) in enumerate(self.iterator.split(df)):
             if self.cross_target_encoder is not None:
@@ -162,25 +161,26 @@ class CrossModelFabric(ABC):
 
             # Подготовка данных в нужном формате
             model = self.models[fold]
-            df.loc[X_val.index, 'PREDICT'] += \
+            predict.loc[X_val.index] += \
                 model.predict(X_val[model.feature_name()].astype(float),
                               num_iteration=self.num_boost_optimal) / self.iterator.n_repeats
 
-        return df['PREDICT']
+        return predict
 
     def predict(self, test):
+        predict = pd.Series(index=test.index, data=np.zeros(test.shape[0]))
         models_len = len(self.models.keys())
         if self.cross_target_encoder is not None:
             encoded_test = self.cross_target_encoder.predict(test)
             test = pd.concat([test, encoded_test], axis=1)
 
-        test['PREDICT'] = 0
+
         for fold in self.models.keys():
             model = self.models[fold]
-            test['PREDICT'] += model.predict(test[model.feature_name()].astype(
+            predict += model.predict(test[model.feature_name()].astype(
                 float), num_iteration=self.num_boost_optimal) / models_len
 
-        return test['PREDICT']
+        return predict
 
     def shap(self, df: pd.DataFrame):
         fig = plt.figure(figsize=(10, 10))
