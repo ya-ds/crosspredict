@@ -96,16 +96,16 @@ result = model_class.fit(train)
 ```
 ## How to use
 
-**Plot Reports for Binary Classification problem example** - [`Plot Reports for Binary Classification problem example.ipynb`](https://github.com//crosspredict/crosspredict/blob/master/notebooks/Plot Reports for Binary Classification problem example.ipynb)
+**Plot_Reports_for_Binary_Classification_problem_example** - [`Plot_Reports_for_Binary_Classification_problem_example.ipynb`](https://github.com//ya-ds/crosspredict/blob/master/notebooks/Plot_Reports_for_Binary_Classification_problem_example.ipynb)
 
-**Simple_example_in_one_Notebook** - [`Simple_example_in_one_Notebook.ipynb`](https://github.com//crosspredict/crosspredict/blob/master/notebooks/Simple_example_in_one_Notebook.ipynb)
+**Simple_example_in_one_Notebook** - [`Simple_example_in_one_Notebook.ipynb`](https://github.com//ya-ds/crosspredict/blob/master/notebooks/Simple_example_in_one_Notebook.ipynb)
 
-**Iterator_class** - [`Iterator_class.ipynb`](https://github.com//crosspredict/crosspredict/blob/master/notebooks/Iterator_class.ipynb)
+**Iterator_class** - [`Iterator_class.ipynb`](https://github.com//ya-ds/crosspredict/blob/master/notebooks/Iterator_class.ipynb)
 
-**CrossModelFabric_class** - [`CrossModelFabric_class.ipynb`](https://github.com//crosspredict/crosspredict/blob/master/notebooks/CrossModelFabric_class.ipynb)
+**CrossModelFabric_class** - [`CrossModelFabric_class.ipynb`](https://github.com//ya-ds/crosspredict/blob/master/notebooks/CrossModelFabric_class.ipynb)
 
-**CrossTargetEncoder_class** - [`CrossTargetEncoder_class.ipynb`](https://github.com//crosspredict/crosspredict/blob/master/notebooks/CrossTargetEncoder_class.ipynb)
+**CrossTargetEncoder_class** - [`CrossTargetEncoder_class.ipynb`](https://github.com//ya-ds/crosspredict/blob/master/notebooks/CrossTargetEncoder_class.ipynb)
 
 ## Authors
 
-[Vladislav Boyadzhi](www.linkedin.com/in/vladislav-boyadzhi)
+[Vladislav Boyadzhi](https://www.linkedin.com/in/vladislav-boyadzhi/)

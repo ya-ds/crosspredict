@@ -9,7 +9,7 @@ Welcome to CrossPredict's documentation!
    :target: https://crosspredict.readthedocs.io/en/latest/?badge=latest 
    :alt: Documentation Status
 
-.. image:: https://badge.fury.io/py/crosspredict.svg
+.. image:: https://badge.fury.io/py/crosspredict.png
    :target: https://badge.fury.io/py/crosspredict
 
 * The library makes cross validation and reports generation easy
@@ -64,7 +64,7 @@ Reports Preview
                  )
     a.fig.savefig('report1.png')
 
-.. image:: ../../notebooks/report1.png
+.. image:: https://github.com/ya-ds/crosspredict/raw/master/notebooks/report1.png
 
 ::
 
@@ -78,7 +78,7 @@ Reports Preview
                   cols_score=['probability'])
     a.fig.savefig('report2.png')
 
-.. image:: ../../notebooks/report2.png
+.. image:: https://github.com/ya-ds/crosspredict/raw/master/notebooks/report2.png
 
 
 Target Encoding with DoubleCrossValidation
@@ -123,7 +123,7 @@ Target Encoding with DoubleCrossValidation
 How to use
 ----------
 
-**Plot Reports for Binary Classification problem example** - `Plot Reports for Binary Classification problem example.ipynb <https://github.com//crosspredict/crosspredict/blob/master/notebooks/Plot Reports for Binary Classification problem example.ipynb>`_
+**Plot_Reports_for_Binary_Classification_problem_example** - `Plot_Reports_for_Binary_Classification_problem_example.ipynb <https://github.com//crosspredict/crosspredict/blob/master/notebooks/Plot_Reports_for_Binary_Classification_problem_example.ipynb>`_
 
 **Simple_example_in_one_Notebook** - `Simple_example_in_one_Notebook.ipynb <https://github.com//crosspredict/crosspredict/blob/master/notebooks/Simple_example_in_one_Notebook.ipynb>`_
 
@@ -137,7 +137,7 @@ How to use
 Authors
 -------
 
-`Vladislav Boyadzhi <www.linkedin.com/in/vladislav-boyadzhi>`_
+`Vladislav Boyadzhi <https://www.linkedin.com/in/vladislav-boyadzhi/>`_
 
 Contents:
 ---------

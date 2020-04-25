@@ -7,7 +7,7 @@
   {%- set titlesuffix = "" %}
 {%- endif %}
 {%- set lang_attr = 'en' if language == None else (language | replace('_', '-')) %}
-{% extends "!layout.html" %}
+
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="{{ lang_attr }}" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="{{ lang_attr }}" > <!--<![endif]-->
@@ -111,7 +111,7 @@
     <link rel="prev" title="{{ prev.title|striptags|e }}" href="{{ prev.link|e }}" />
     {%- endif %}
   {%- endblock %}
-  {% block extrahead %}
+  {%- block extrahead %}
     <link href="{{ pathto("_static/my.css", True) }}" rel="stylesheet" type="text/css">
   {% endblock %}
 </head>
@@ -159,7 +159,7 @@
         {% block navigation %}
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           <div style="padding: 5px 10px 10px 10px; text-align: center; width: 100%">
-            <iframe src="https://ghbtns.com/github-btn.html?user=crosspredict&repo=crosspredict&type=star&count=true&size=large" frameborder="0" scrolling="0" width="150px" height="30px"></iframe>
+            <iframe src="https://ghbtns.com/github-btn.html?user=ya-ds&repo=crosspredict&type=star&count=true&size=large" frameborder="0" scrolling="0" width="150px" height="30px"></iframe>
           </div>
           {% block menu %}
             {#
