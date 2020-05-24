@@ -48,7 +48,7 @@ class CurveFabric(ABC):
     def _draw_series_to_line_plot(self, df_series, ax, label, legend=False):
         N = len(df_series.index.values)
         ind = np.arange(N)
-        ax.plot(ind, df_series.values)
+        ax.plot(ind, df_series.values, label=label)
         ax.set_ylabel(label)
         ax.set_ylim(bottom=0, auto=True)
         ax.tick_params('y')
