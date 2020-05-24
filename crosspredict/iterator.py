@@ -77,19 +77,24 @@ class Iterator:
                 n_splits=self.n_splits,
                 n_repeats=self.n_repeats,
                 random_state=self.random_state)
-            self._split = self._unique_clients.reshape(-1, 1),
         elif self.col_target is not None:
             self._model_validation = RepeatedStratifiedKFold(
                 n_splits=self.n_splits,
                 n_repeats=self.n_repeats,
                 random_state=self.random_state)
-            self._split = np.zeros(df.shape), df[self.col_target]
         else:
             self._model_validation = RepeatedKFold(
                 n_splits=self.n_splits,
                 n_repeats=self.n_repeats,
                 random_state=self.random_state)
-            self._split = np.zeros(df.shape),
+
+    def _get_split(self, df):
+        if self.cv_byclient:
+            return self._unique_clients.reshape(-1, 1),
+        elif self.col_target is not None:
+            return np.zeros((df.shape[0],1)), df[self.col_target]
+        else:
+            return np.zeros((df.shape[0],1)),
 
     def split(self, df):
 
@@ -100,7 +105,7 @@ class Iterator:
             df), "Provided DataFrame doesn't match fitted DataFrame"
 
         for fold, (train_idx, val_idx) in enumerate(
-                self._model_validation.split(*self._split)):
+                self._model_validation.split(*self._get_split(df))):
             if self.cv_byclient:
                 val_idx = df[self.col_client].isin(
                     self._unique_clients[val_idx])
