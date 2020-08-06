@@ -10,23 +10,7 @@ from sklearn.metrics import average_precision_score
 from sklearn.metrics import RocCurveDisplay, PrecisionRecallDisplay
 
 
-class CurveFabric(ABC):
-    def __init__(self, col_score, col_target, name=None):
-        self.col_score = col_score
-        self.col_target = col_target
-        if name:
-            self.name = name
-        else:
-            self.name = self.col_score + ' | ' + self.col_target
-
-    @abstractmethod
-    def fit(self, df):
-        pass
-
-    @abstractmethod
-    def plot(self, ax=None, **kwargs):
-        pass
-
+class ByMonthsCurve:
     def _draw_series_to_bar_plot(self, df_series, ax, label='Count'):
         N = len(df_series.index.values)
         ind = np.arange(N)
@@ -54,6 +38,23 @@ class CurveFabric(ABC):
         ax.tick_params('y')
         if legend:
             ax.legend(loc="lower right")
+
+class CurveFabric(ABC, ByMonthsCurve):
+    def __init__(self, col_score, col_target, name=None):
+        self.col_score = col_score
+        self.col_target = col_target
+        if name:
+            self.name = name
+        else:
+            self.name = self.col_score + ' | ' + self.col_target
+
+    @abstractmethod
+    def fit(self, df):
+        pass
+
+    @abstractmethod
+    def plot(self, ax=None, **kwargs):
+        pass
 
 
 class DistributionCurve(CurveFabric):
@@ -89,6 +90,26 @@ class GenGINICurve(CurveFabric):
         ax_twinx = kwargs['ax_twinx']
         self._draw_series_to_bar_plot(self.count, ax, label='Count')
         self._draw_series_to_line_plot(self.series_auc, ax_twinx, label='GINI')
+        if title:
+            ax.set_title(title, fontsize=14, fontweight='bold')
+
+
+class GenRiskCurve(CurveFabric):
+    def __init__(self, col_score, col_target, col_generation_deals, name=None):
+        super().__init__(col_score, col_target, name=name)
+        self._col_generation_deals = col_generation_deals
+        self.risk = None
+
+    def fit(self, df):
+        self.risk = df.groupby(self._col_generation_deals)[self.col_target].agg(['count', 'mean'])
+        return self
+
+    def plot(self, ax=None, title=None, **kwargs):
+        self._draw_series_to_bar_plot(
+            self.risk['count'], ax, label='Count')
+        ax_twinx = ax.twinx()
+        self._draw_series_to_line_plot(
+            self.risk['mean'], ax_twinx, label='Risk')
         if title:
             ax.set_title(title, fontsize=14, fontweight='bold')
 
@@ -137,7 +158,7 @@ class RocAucCurve(CurveFabric):
         viz = RocCurveDisplay(
             fpr=self.fpr,
             tpr=self.tpr,
-            roc_auc=self.roc_auc,
+            roc_auc=self.roc_auc*100,
             estimator_name=self.name)
 
         if title:

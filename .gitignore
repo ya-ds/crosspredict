@@ -2,6 +2,10 @@
 .vscode/
 *.csv
 *.ipynb
+**/docs/build/
+**/docs/source/_build/
+**/tests/
+**/notebooks/
 !CrossModelFabric_class.ipynb
 !Iterator_class.ipynb
 !CrossTargetEncoder_class.ipynb

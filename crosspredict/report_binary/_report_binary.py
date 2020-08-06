@@ -2,7 +2,7 @@ from typing import List, Tuple, Dict
 import pandas as pd
 import matplotlib.pyplot as plt
 from itertools import product
-from ._curves import PrecisionRecallCurve, RocAucCurve, MeanProbCurve, GenGINICurve, DistributionCurve
+from ._curves import PrecisionRecallCurve, RocAucCurve, MeanProbCurve, GenGINICurve, DistributionCurve, GenRiskCurve
 
 
 class ReportBinary:
@@ -67,6 +67,11 @@ class ReportBinary:
                     self.stats.at[(col_score,
                                    col_target),
                                   'gen-gini'] = GenGINICurve(col_score,
+                                                             col_target,
+                                                             self._col_generation_deals).fit(df_deal)
+                    self.stats.at[(col_score,
+                                   col_target),
+                                  'gen-risk'] = GenRiskCurve(col_score,
                                                              col_target,
                                                              self._col_generation_deals).fit(df_deal)
 
@@ -146,6 +151,16 @@ class ReportBinary:
                     loc = locations
                 ax = plt.subplot2grid((height, width), **loc)
                 res = {'ax': ax, 'ax_twinx': ax.twinx()}
+            elif report == 'gen-risk':
+                assert self._col_generation_deals is not None, f'To plot RISK by generations you need to pass `col_generation_deals`'
+                if (isinstance(locations, tuple)) | (
+                        isinstance(locations, list)):
+                    assert len(locations) == 1, f'Location of RISK by generations plot should have `len`==1, passed `len`={len(locations)}'
+                    loc = locations[0]
+                else:
+                    loc = locations
+                ax = plt.subplot2grid((height, width), **loc)
+                res = {'ax': ax, 'ax_twinx': ax.twinx()}
             elif report == 'distribution':
                 res = []
                 if (isinstance(locations, tuple)) | (
@@ -211,6 +226,13 @@ class ReportBinary:
                                   report].plot(self._report[report]['ax'],
                                                ax_twinx=self._report[report]['ax_twinx'],
                                                title='GINI by generations')
+            elif report == 'gen-risk':
+                for col_score, col_target in product(cols_score, cols_target):
+                    self.stats.at[(col_score,
+                                   col_target),
+                                  report].plot(self._report[report]['ax'],
+                                               ax_twinx=self._report[report]['ax_twinx'],
+                                               title='RISK by generations')
             elif report == 'distribution':
                 for i, (col_score, col_target) in enumerate(
                         product(cols_score, cols_target)):
