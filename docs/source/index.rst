@@ -45,36 +45,37 @@ Reports Preview
 
 ::
 
-    #precalculates all metrics
-    a = ReportBinary(cols_score = ['result_egr_to_one','probability'],
-                     cols_target=['target'],
-                     col_generation_deals='first_dt_no_comm_mon'
-                    )
-    a.fit(df)
+    #create report object
+    a = ReportBinary()
 
 ::
 
-    a.plot_report(report_shape = (4,2),
-                  report={'roc-auc':  {'loc':(0, 0)},
-                          'precision-recall': [{'loc':(0, 1)}],
-                          'mean-prob': [{'loc':(1, 0)},{'loc':(1, 1)}],
-                          'gen-gini': {'loc':(2,0), 'colspan':2},
-                          'distribution': [{'loc':(3,0)},{'loc':(3,1)}]
-                         }
-                 )
+    a.plot_report(
+       df,
+       report_shape = (5,2),
+       report={'Roc-Auc':  {'loc':(0, 0)},
+             'Precision-Recall': [{'loc':(0, 1)}],
+             'MeanTarget-by-Probability': [{'loc':(1, 0)},{'loc':(1, 1)}],
+             'Gini-by-Generations': {'loc':(2,0), 'colspan':2},
+             'MeanTarget-by-Generations': {'loc':(3,0), 'colspan':2},
+             'Probability-Distribution': [{'loc':(4,0)},{'loc':(4,1)}]},
+       cols_score = ['result_egr_to_one','probability'],
+       cols_target = ['target','target2'],
+       col_generation_deals='first_dt_no_comm_mon'
+   )
     a.fig.savefig('report1.png')
 
 .. image:: https://github.com/ya-ds/crosspredict/raw/master/notebooks/report1.png
 
 ::
 
-    a.plot_report(report_shape = (3,2),
-                  report={'roc-auc':  {'loc':(0, 0)},
-                          'precision-recall': {'loc':(0, 1)},
-                          'mean-prob': {'loc':(1, 0)},
-                          'gen-gini': [{'loc':(2,0), 'colspan':2}],
-                          'distribution': {'loc':(1,1)}
-                         },
+    a.plot_report(report_shape = (4,2),
+                  report={'Roc-Auc':  {'loc':(0, 0)},
+                         'Precision-Recall': [{'loc':(0, 1)}],
+                         'MeanTarget-by-Probability': [{'loc':(1, 0)}],
+                         'Gini-by-Generations': {'loc':(2,0), 'colspan':2},
+                         'MeanTarget-by-Generations': {'loc':(3,0), 'colspan':2},
+                         'Probability-Distribution': [{'loc':(1,1)}]},
                   cols_score=['probability'])
     a.fig.savefig('report2.png')
 
