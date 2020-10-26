@@ -16,7 +16,7 @@ def find_requires():
 if __name__ == "__main__":
     setup(
         name="crosspredict",
-        version="0.1.2",
+        version="1.0.0",
         author="Vladislav Boyadzhi",
         author_email="vladislav.boyadzhi@gmail.com",
         description='package for easy crossvalidation',
