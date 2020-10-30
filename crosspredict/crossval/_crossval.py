@@ -232,7 +232,7 @@ class CrossModelFabric(ABC):
                     estimator=np.mean, order=cols_best)
         return fig, shap_feature_stats.reset_index()
 
-    def shap_summary_plot(self, test: pd.DataFrame):
+    def shap_summary_plot(self, test: pd.DataFrame, n_samples=500):
         fig = plt.figure()
         log = logging.getLogger(__name__)
         shap_df_fin = pd.DataFrame(columns=['feature'])
@@ -244,7 +244,7 @@ class CrossModelFabric(ABC):
         model = self.models[0]
         explainer = shap.TreeExplainer(model)
         df_sample = test[model.feature_name()].sample(
-            n=500, random_state=0, replace=True).astype(float)
+            n=n_samples, random_state=0, replace=True).astype(float)
         if self.params['metric']=='auc':
             shap_values = explainer.shap_values(df_sample)[1]
         else:
