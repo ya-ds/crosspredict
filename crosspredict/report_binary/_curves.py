@@ -30,12 +30,12 @@ class ByMonthsCurve:
             plt.xticks(ind, df_series.index.values)
         plt.setp(ax.xaxis.get_majorticklabels(), rotation=90)
 
-    def _draw_series_to_line_plot(self, df_series, ax, label, name, legend=False):
+    def _draw_series_to_line_plot(self, df_series, ax, label, name, legend=False, bottom=0, auto=True):
         N = len(df_series.index.values)
         ind = np.arange(N)
         ax.plot(ind, df_series.values, label=name)
         ax.set_ylabel(label)
-        ax.set_ylim(bottom=0, auto=True)
+        ax.set_ylim(bottom=bottom, auto=auto)
         ax.tick_params('y')
         if legend:
             ax.legend(loc="lower right")
@@ -100,7 +100,7 @@ class GenGINICurve(CurveFabric):
         self.ax = ax
         self.ax_twinx = ax_twinx
         self._draw_series_to_bar_plot(self.count, ax, label='Count')
-        self._draw_series_to_line_plot(self.series_auc, ax_twinx, name=self.name, label='GINI', legend=True)
+        self._draw_series_to_line_plot(self.series_auc, ax_twinx, name=self.name, label='GINI', legend=True, **kwargs)
         if title:
             ax.set_title(title, fontsize=14, fontweight='bold')
         return self
