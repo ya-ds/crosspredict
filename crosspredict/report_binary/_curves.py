@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import numpy as np
+import logging
 from sklearn.metrics import roc_curve
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import auc, roc_auc_score
@@ -64,13 +65,19 @@ class DistributionCurve(CurveFabric):
         self.series = None
 
     def fit(self, df):
+        log = logging.getLogger(__name__)
+        log.info(f"Fitting DistributionCurve.")
+        assert sum(df[self.col_score].isnull())==0, f"Column `{self.col_score}` passed in `DistributionCurve` contains None objects"
+        log.info(f"Using DataFrame where {self.col_score} is not None. DataFrame's shape = {df.shape}")
         self.series = df[self.col_score]
         return self
 
     def plot(self, ax=None, title=None, **kwargs):
+        self.ax = ax
         sns.distplot(self.series, ax=ax)
         if title:
             ax.set_title(title, fontsize=14, fontweight='bold')
+        return self
 
 
 class GenGINICurve(CurveFabric):
@@ -90,10 +97,13 @@ class GenGINICurve(CurveFabric):
 
     def plot(self, ax=None, title=None, **kwargs):
         ax_twinx = kwargs['ax_twinx']
+        self.ax = ax
+        self.ax_twinx = ax_twinx
         self._draw_series_to_bar_plot(self.count, ax, label='Count')
         self._draw_series_to_line_plot(self.series_auc, ax_twinx, name=self.name, label='GINI', legend=True)
         if title:
             ax.set_title(title, fontsize=14, fontweight='bold')
+        return self
 
 
 class GenRiskCurve(CurveFabric):
@@ -107,12 +117,15 @@ class GenRiskCurve(CurveFabric):
         return self
 
     def plot(self, ax=None, ax_twinx=None, title=None, label=None, name=None, **kwargs):
+        self.ax = ax
+        self.ax_twinx = ax_twinx
         if label is None:
             label='Mean Target'
         self._draw_series_to_bar_plot(self.risk['count'], ax, label='Count')
         self._draw_series_to_line_plot(self.risk['mean'], ax_twinx, label=label, name=name, legend=True)
         if title:
             ax.set_title(title, fontsize=14, fontweight='bold')
+        return self
 
 
 class MeanProbCurve(CurveFabric):
@@ -130,12 +143,15 @@ class MeanProbCurve(CurveFabric):
         return self
 
     def plot(self, ax=None, ax_twinx=None, title=None, label=None, name=None, **kwargs):
+        self.ax = ax
+        self.ax_twinx = ax_twinx
         if label is None:
             label='Mean Target'
         self._draw_series_to_bar_plot(self.mean_prob['count'], ax, label='Count')
         self._draw_series_to_line_plot(self.mean_prob['mean'], ax_twinx, label=label, name=name, legend=True)
         if title:
             ax.set_title(title, fontsize=14, fontweight='bold')
+        return self
 
 
 class RocAucCurve(CurveFabric):
@@ -154,8 +170,9 @@ class RocAucCurve(CurveFabric):
     def plot(self, ax=None, title=None, **kwargs):
         if ax is None:
             fig, ax = plt.subplots()
+        self.ax = ax
 
-        viz = RocCurveDisplay(
+        self.viz = RocCurveDisplay(
             fpr=self.fpr,
             tpr=self.tpr,
             roc_auc=self.roc_auc*100,
@@ -164,7 +181,8 @@ class RocAucCurve(CurveFabric):
         if title:
             ax.set_title(title, fontsize=14, fontweight='bold')
 
-        return viz.plot(ax=ax, name=self.name, **kwargs)
+        self.viz.plot(ax=ax, name=self.name, **kwargs)
+        return self
 
 
 class PrecisionRecallCurve(CurveFabric):
@@ -185,8 +203,9 @@ class PrecisionRecallCurve(CurveFabric):
 
         if ax is None:
             fig, ax = plt.subplots()
+        self.ax = ax
 
-        viz = PrecisionRecallDisplay(
+        self.viz = PrecisionRecallDisplay(
             precision=self.precision, recall=self.recall,
             average_precision=self.average_precision, estimator_name=self.name
         )
@@ -194,4 +213,5 @@ class PrecisionRecallCurve(CurveFabric):
         if title:
             ax.set_title(title, fontsize=14, fontweight='bold')
 
-        return viz.plot(ax=ax, name=self.name, **kwargs)
+        self.viz.plot(ax=ax, name=self.name, **kwargs)
+        return self

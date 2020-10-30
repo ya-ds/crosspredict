@@ -115,11 +115,11 @@ class CrossModelFabric(ABC):
             self.models[fold] = model
             if self.valid:
                 # Построение прогнозов при разном виде взаимодействия
-                scores[fold] = evals_result['eval']['auc']
-                best_auc = np.max(evals_result['eval']['auc'])
+                scores[fold] = evals_result['eval'][self.params['metric']]
+                best_auc = np.max(evals_result['eval'][self.params['metric']])
                 scores_avg.append(best_auc)
 
-                log.info(f'\tCROSSVALIDATION FOLD {fold%self.iterator.n_splits} ENDS with best ROCAUC = {best_auc}')
+                log.info(f'\tCROSSVALIDATION FOLD {fold%self.iterator.n_splits} ENDS with best `{self.params["metric"]}` = {best_auc}')
 
         if self.valid:
             self.scores = pd.DataFrame(
@@ -182,7 +182,13 @@ class CrossModelFabric(ABC):
 
         return predict
 
-    def shap(self, df: pd.DataFrame):
+    def shap(self, df: pd.DataFrame, n_samples=500):
+        '''
+
+        :param df:
+        :param n_samples: количество записей которое будет семплироваться в каждом тестовом фолде для анализы shap values
+        :return:
+        '''
         fig = plt.figure(figsize=(10, 10))
         log = logging.getLogger(__name__)
         shap_df_fin = pd.DataFrame(columns=['feature'])
@@ -203,8 +209,11 @@ class CrossModelFabric(ABC):
             model = self.models[fold]
             explainer = shap.TreeExplainer(model)
             df_sample = X_val[model.feature_name()].sample(
-                n=500, random_state=0, replace=True).astype(float)
-            shap_values = explainer.shap_values(df_sample)[1]
+                n=n_samples, random_state=0, replace=True).astype(float)
+            if self.params['metric']=='auc':
+                shap_values = explainer.shap_values(df_sample)[1]
+            else:
+                shap_values = explainer.shap_values(df_sample)
             shap_df = pd.DataFrame(zip(model.feature_name(), np.mean(
                 np.abs(shap_values), axis=0)), columns=['feature', 'shap_' + str(fold)])
             shap_df_fin = pd.merge(shap_df_fin, shap_df,
@@ -236,7 +245,10 @@ class CrossModelFabric(ABC):
         explainer = shap.TreeExplainer(model)
         df_sample = test[model.feature_name()].sample(
             n=500, random_state=0, replace=True).astype(float)
-        shap_values = explainer.shap_values(df_sample)[1]
+        if self.params['metric']=='auc':
+            shap_values = explainer.shap_values(df_sample)[1]
+        else:
+            shap_values = explainer.shap_values(df_sample)
         shap_df = pd.DataFrame(zip(model.feature_name(), np.mean(
             np.abs(shap_values), axis=0)), columns=['feature', 'shap_'])
         shap_df_fin = pd.merge(shap_df_fin, shap_df, how='outer', on='feature')
