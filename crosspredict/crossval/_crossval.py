@@ -182,14 +182,14 @@ class CrossModelFabric(ABC):
 
         return predict
 
-    def shap(self, df: pd.DataFrame, n_samples=500):
+    def shap(self, df: pd.DataFrame, n_samples=500, figsize=(10, 10)):
         '''
 
         :param df:
         :param n_samples: количество записей которое будет семплироваться в каждом тестовом фолде для анализы shap values
         :return:
         '''
-        fig = plt.figure(figsize=(10, 10))
+        fig = plt.figure(figsize=figsize)
         log = logging.getLogger(__name__)
         shap_df_fin = pd.DataFrame(columns=['feature'])
 
