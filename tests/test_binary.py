@@ -1,28 +1,42 @@
+import os
+from collections import namedtuple
+
+from hyperopt import fmin, tpe, Trials, space_eval
+import numpy as np
+import pandas as pd
 import pytest
+import requests
 import yaml
 
-import numpy as np
-from sklearn.model_selection import StratifiedKFold, KFold, RepeatedStratifiedKFold
-import pandas as pd
-pd.set_option('display.max_columns',999)
-pd.set_option('display.max_rows',999)
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from sklearn import datasets
-from sklearn.decomposition import PCA
-from crosspredict.crossval import CrossLightgbmModel, CrossXgboostModel
+from crosspredict.crossval import \
+    CrossLightgbmModel, CrossXgboostModel, CrossCatboostModel
 from crosspredict.iterator import Iterator
-import os
-import requests
+from crosspredict.report_binary import ReportBinary
 
-@pytest.fixture
-def lightgbm_fixture():
+pd.set_option('display.max_columns', 999)
+pd.set_option('display.max_rows', 999)
+
+PARAMETERS_FPATH = 'tests\parameters.yml'
+
+
+@pytest.fixture(scope='module')
+def get_params():
+    with open(PARAMETERS_FPATH) as f_in:
+        test_param_dict = yaml.safe_load(f_in)
+
+    return test_param_dict
+
+
+@pytest.fixture(scope='module')
+def onetwotrip_dataset():
 
     file_url = 'https://boosters.pro/api/ch/files/pub/onetwotrip_challenge_train.csv'
     file_path = 'tests/onetwotrip_challenge_train.csv'
-    if os.path.isfile(file_path) != True:
-        myfile = requests.get(file_url)
-        open(file_path, 'wb').write(myfile.content)
+
+    if not os.path.isfile(file_path):
+        my_file = requests.get(file_url)
+        with open(file_path, 'wb') as f_in:
+            f_in.write(my_file.content)
 
     df = pd.read_csv(file_path)
 
@@ -33,120 +47,189 @@ def lightgbm_fixture():
     train = df[~val_idx].copy()
 
     feature_name = df.columns.values
-    feature_name = np.delete(feature_name, np.argwhere(feature_name == 'goal1'))
-    feature_name = np.delete(feature_name, np.argwhere(feature_name == 'orderid'))
-    feature_name = np.delete(feature_name, np.argwhere(feature_name == 'userid'))
 
-    params = {'bagging_fraction': 0.849285747554019,
-              'bagging_freq': 5,
-              'bagging_seed': 0,
-              'boosting_type': 'gbdt',
-              'data_random_seed': 0,
-              'drop_seed': 0,
-              'feature_fraction': 0.8212766928844304,
-              'feature_fraction_seed': 0,
-              'lambda_l1': 0.8955546599539566,
-              'lambda_l2': 1.4423261095989717,
-              'learning_rate': 0.03,
-              'max_bin': 255,
-              'max_depth': 43,
-              'metric': 'auc',
-              'min_data_in_leaf': 149,
-              'min_sum_hessian_in_leaf': 1.804477623298885,
-              'num_leaves': 363,
-              'objective': 'binary',
-              'seed': 0,
-              'verbose': -1}
+    col_to_delete_list = ['goal1', 'orderid', 'userid']
 
-    iter_df = Iterator(n_repeats=2,
-                       n_splits=3,
-                       random_state=0,
-                       col_client='userid',
-                       cv_byclient=True)
+    for feature in col_to_delete_list:
+        feature_name = np.delete(
+            feature_name,
+            np.argwhere(feature_name == feature)
+        )
+
+    Data = namedtuple(
+        'Data',
+        ['train', 'test', 'col_feature_list', 'col_client', 'col_target', 'col_cat_list']
+    )
+
+    result = Data(
+        train=train,
+        test=test,
+        col_feature_list=feature_name,
+        col_client='userid',
+        col_target='goal1',
+        col_cat_list=['field3', 'field2', 'field11', 'field23', 'field18', 'field20'],
+    )
+
+    return result
+
+
+@pytest.fixture(scope='module')
+def create_iterator(onetwotrip_dataset, get_params):
+    params = get_params['iterator']
+
+    iter_df = Iterator(col_client=onetwotrip_dataset.col_client, **params)
+
+    return iter_df
+
+
+@pytest.fixture(scope='module')
+def lightgbm_fixture(onetwotrip_dataset, create_iterator, get_params):
+
+    train, test = onetwotrip_dataset.train, onetwotrip_dataset.test
+
+    params = get_params['lightgbm_params']
+    model_params = get_params['model']
+    iter_df = create_iterator
 
     model_class = CrossLightgbmModel(iterator=iter_df,
-                                     feature_name=feature_name,
+                                     feature_name=onetwotrip_dataset.col_feature_list,
                                      params=params,
-                                     cols_cat=['field3', 'field2', 'field11', 'field23', 'field18', 'field20'],
-                                     num_boost_round=9999,
-                                     early_stopping_rounds=50,
-                                     valid=True,
-                                     random_state=0,
-                                     col_target='goal1', )
+                                     cols_cat=onetwotrip_dataset.col_cat_list,
+                                     col_target=onetwotrip_dataset.col_target,
+                                     **model_params)
     result = model_class.fit(train)
 
     return iter_df, model_class, result
 
-@pytest.fixture
-def xgboost_fixture():
 
-    file_url = 'https://boosters.pro/api/ch/files/pub/onetwotrip_challenge_train.csv'
-    file_path = 'tests/onetwotrip_challenge_train.csv'
-    if os.path.isfile(file_path) != True:
-        myfile = requests.get(file_url)
-        open(file_path, 'wb').write(myfile.content)
+@pytest.fixture(scope='module')
+def xgboost_fixture(onetwotrip_dataset, create_iterator, get_params):
 
-    df = pd.read_csv(file_path)
+    train, test = onetwotrip_dataset.train, onetwotrip_dataset.test
 
-    unique_clients = pd.Series(df['userid'].unique())
-    test_users = unique_clients.sample(frac=0.2, random_state=0)
-    val_idx = df['userid'].isin(test_users)
-    test = df[val_idx].copy()
-    train = df[~val_idx].copy()
-
-    feature_name = df.columns.values
-    feature_name = np.delete(feature_name, np.argwhere(feature_name == 'goal1'))
-    feature_name = np.delete(feature_name, np.argwhere(feature_name == 'orderid'))
-    feature_name = np.delete(feature_name, np.argwhere(feature_name == 'userid'))
-
-    params = {
-        'max_depth': 4,
-        'min_child_weight': 6,
-        'gamma': 0.05,
-        'colsample_bytree': 1,
-        'subsample': 0.6,
-        'scale_pos_weight': 1,
-        'objective': 'binary:logistic',
-        'eta': 0.1,
-        'alpha': 0.9,
-        'lambda': 0.6,
-        'eval_metric': 'auc',
-        'silent': 1,
-        'verbose_eval': False,
-        'seed': 0}
-
-    iter_df = Iterator(n_repeats=2,
-                       n_splits=3,
-                       random_state=0,
-                       col_client='userid',
-                       cv_byclient=True)
+    params = get_params['xgboost_params']
+    model_params = get_params['model']
+    iter_df = create_iterator
 
     model_class = CrossXgboostModel(iterator=iter_df,
-                                     feature_name=feature_name,
-                                     params=params,
-                                     cols_cat=['field3', 'field2', 'field11', 'field23', 'field18', 'field20'],
-                                     num_boost_round=9999,
-                                     early_stopping_rounds=50,
-                                     valid=True,
-                                     random_state=0,
-                                     col_target='goal1', )
+                                    feature_name=onetwotrip_dataset.col_feature_list,
+                                    params=params,
+                                    cols_cat=onetwotrip_dataset.col_cat_list,
+                                    col_target=onetwotrip_dataset.col_target,
+                                    **model_params)
     result = model_class.fit(train)
 
     return iter_df, model_class, result
 
-def test_lightgbm_avg_loss(lightgbm_fixture):
+
+@pytest.fixture(scope='module')
+def catboost_fixture(onetwotrip_dataset, create_iterator, get_params):
+
+    train, test = onetwotrip_dataset.train, onetwotrip_dataset.test
+
+    params = get_params['catboost_params']
+    model_params = get_params['model']
+    iter_df = create_iterator
+
+    model_class = CrossCatboostModel(iterator=iter_df,
+                                     feature_name=onetwotrip_dataset.col_feature_list,
+                                     params=params,
+                                     cols_cat=onetwotrip_dataset.col_cat_list,
+                                     col_target=onetwotrip_dataset.col_target,
+                                     **model_params)
+    result = model_class.fit(train)
+
+    return iter_df, model_class, result
+
+
+def test_lightgbm_provide_appropriate_quality(lightgbm_fixture):
     iter_df, model_class, result = lightgbm_fixture
-    assert result['loss']<-0.69
-
-def test_lightgbm_each_loss(lightgbm_fixture):
-    iter_df, model_class, result = lightgbm_fixture
-    assert all(np.array(result['scores_all'])>0.69)==True
+    assert result['loss'] < -0.69, 'test avg_loss'
+    assert all(np.array(result['scores_all']) > 0.69), 'test each loss'
 
 
-def test_xgboost_avg_loss(xgboost_fixture):
+def test_xgboost_provide_appropriate_quality(xgboost_fixture):
     iter_df, model_class, result = xgboost_fixture
-    assert result['loss']<-0.69
+    assert result['loss'] < -0.69, 'test avg_loss'
+    assert all(np.array(result['scores_all']) > 0.69), 'test each loss'
 
-def test_xgboost_each_loss(xgboost_fixture):
-    iter_df, model_class, result = xgboost_fixture
-    assert all(np.array(result['scores_all'])>0.69)==True
+
+def test_catboost_provide_appropriate_quality(catboost_fixture):
+    iter_df, model_class, result = catboost_fixture
+    assert result['loss'] < -0.69, 'test avg_loss'
+    assert all(np.array(result['scores_all']) > 0.69), 'test each loss'
+
+
+def test_cross_catboost_model_can_get_hyperopt_space():
+    hyperopt_space = CrossCatboostModel.get_hyperopt_space()
+    assert type(hyperopt_space) == dict, (
+        f'classmethod get_hyperopt_space returns object of type {type(hyperopt_space)},'
+        f' but should return dict type'
+    )
+
+
+@pytest.mark.slow
+def test_cross_catboost_work_with_hyperopt_correctly(onetwotrip_dataset, create_iterator, get_params, printer):
+    printer(
+        'WARNING! Slow test is running... (Use --skip-slow option to skip)'
+    )
+
+    train, test = onetwotrip_dataset.train, onetwotrip_dataset.test
+
+    model_params = get_params['model']
+    iter_df = create_iterator
+
+    space = CrossCatboostModel.get_hyperopt_space()
+
+    def score(params):
+        cv_score = CrossCatboostModel(iterator=iter_df,
+                                      feature_name=onetwotrip_dataset.col_feature_list,
+                                      params=params,
+                                      cols_cat=onetwotrip_dataset.col_cat_list,
+                                      col_target=onetwotrip_dataset.col_target,
+                                      **model_params)
+
+        return cv_score.fit(train)
+
+    trials = Trials()
+    best = fmin(
+        fn=score, space=space, algo=tpe.suggest, trials=trials, max_evals=1
+    )
+    result = space_eval(space, best)
+
+    assert len(result.keys()) == len(space.keys())
+
+
+def test_catboost_compatible_with_plot_report_functionality(onetwotrip_dataset, catboost_fixture):
+    test = onetwotrip_dataset.test
+    iter_df, model_class, result = catboost_fixture
+    test['PREDICT'] = model_class.predict(test)
+
+    report = ReportBinary()
+    report.plot_report(
+        df=test,
+        cols_score=['PREDICT'],
+        cols_target=[onetwotrip_dataset.col_target],
+        report_shape=[1, 3],
+        report={
+            'Roc-Auc': {'loc': (0, 0)},
+            'Precision-Recall': {'loc': (0, 1)},
+            'Probability-Distribution': {'loc': (0, 2)}
+        }
+    )
+
+    report.fig.savefig('test_fig.png')
+
+    assert hasattr(report, 'stats')
+    assert len(report.fig.axes) == 3
+    assert os.path.isfile('test_fig.png')
+
+
+def test_catboost_compatible_with_shap_functionality(onetwotrip_dataset, catboost_fixture):
+    train = onetwotrip_dataset.train
+    iter_df, model_class, result = catboost_fixture
+
+    fig, shap_df = model_class.shap(train)
+    fig.savefig('shap_test.png')
+
+    assert os.path.isfile('shap_test.png')
