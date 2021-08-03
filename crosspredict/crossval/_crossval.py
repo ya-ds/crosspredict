@@ -209,7 +209,7 @@ class CrossModelFabric(ABC):
             model = self.models[fold]
             explainer = shap.TreeExplainer(model)
             df_sample = X_val[model.feature_name()].sample(
-                n=n_samples, random_state=0, replace=True).astype(float)
+                n=n_samples, random_state=0, replace=True)
             if self.params['metric']=='auc':
                 shap_values = explainer.shap_values(df_sample)[1]
             else:
