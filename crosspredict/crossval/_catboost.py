@@ -1,4 +1,5 @@
 from typing import Optional, Union, List
+import sys
 
 from hyperopt import hp
 from hyperopt.pyll import scope
@@ -45,6 +46,13 @@ class CrossCatboostModel(CrossModelFabric):
             categorical_feature: List[str],
             **kwargs
     ) -> Pool:
+
+        if categorical_feature == 'auto':
+
+            print('WARNING: auto categorical features detection is not supported.'
+                  'All features is considered as numerical', file=sys.stderr)
+
+            categorical_feature = []
 
         data[categorical_feature] = data[categorical_feature].astype('int64')
 
