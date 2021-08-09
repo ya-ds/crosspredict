@@ -30,7 +30,7 @@ class ByMonthsCurve:
             plt.xticks(ind, df_series.index.values)
         plt.setp(ax.xaxis.get_majorticklabels(), rotation=90)
 
-    def _draw_series_to_line_plot(self, df_series, ax, label, name, legend=False, bottom=0, auto=True):
+    def _draw_series_to_line_plot(self, df_series, ax, label, name, legend=False, bottom=0, auto=True, ax_twinx=None, col_generation_deals=None):
         N = len(df_series.index.values)
         ind = np.arange(N)
         ax.plot(ind, df_series.values, label=name)
@@ -100,7 +100,7 @@ class GenGINICurve(CurveFabric):
         self.ax = ax
         self.ax_twinx = ax_twinx
         self._draw_series_to_bar_plot(self.count, ax, label='Count')
-        self._draw_series_to_line_plot(self.series_auc, ax_twinx, name=self.name, label='GINI', legend=True, **kwargs)
+        self._draw_series_to_line_plot(self.series_auc, ax=ax_twinx, name=self.name, label='GINI', legend=True, **kwargs)
         if title:
             ax.set_title(title, fontsize=14, fontweight='bold')
         return self
@@ -116,7 +116,8 @@ class GenRiskCurve(CurveFabric):
         self.risk = df.groupby(self._col_generation_deals)[self.col_target].agg(['count', 'mean'])
         return self
 
-    def plot(self, ax=None, ax_twinx=None, title=None, label=None, name=None, **kwargs):
+    def plot(self, ax=None, title=None, label=None, name=None, **kwargs):
+        ax_twinx = kwargs['ax_twinx']
         self.ax = ax
         self.ax_twinx = ax_twinx
         if label is None:
