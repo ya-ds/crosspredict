@@ -1,61 +1,66 @@
+iterator:
+  n_repeats: 2
+  n_splits: 3
+  random_state: 0
+  cv_byclient: True
 
 model:
-#  cols_target: ['goal1','goal21','goal22','goal23','goal24','goal25',]
-  cols_target: ['goal1']
-  col_id: 'orderid'
-  col_client: 'userid'
-#  cols_cat: 'auto'
-  cols_cat: ['field3','field2','field11','field23','field18','field20']
-  cv_byclient: False
-  n_splits: 7
-  n_repeats: 3
+  num_boost_round: 9999
+  early_stopping_rounds: 50
+  valid: True
   random_state: 0
 
-cols_del:
-  goal1: ['indicator_goal21','mean_byuser_indicator_goal21','goal21','goal22','goal23','goal24','goal25']
-  goal21: ['goal21','goal22','goal23','goal24','goal25']
-  goal22: ['goal21','goal22','goal23','goal24','goal25']
-  goal23: ['goal21','goal22','goal23','goal24','goal25']
-  goal24: ['goal21','goal22','goal23','goal24','goal25']
-  goal25: ['goal21','goal22','goal23','goal24','goal25']
+lightgbm_params:
+  bagging_fraction: 0.849285747554019
+  bagging_freq: 5
+  bagging_seed: 0
+  boosting_type: gbdt
+  data_random_seed: 0
+  drop_seed: 0
+  feature_fraction: 0.8212766928844304
+  feature_fraction_seed: 0
+  lambda_l1: 0.8955546599539566
+  lambda_l2: 1.4423261095989717
+  learning_rate: 0.03
+  max_bin: 255
+  max_depth: 43
+  metric: auc
+  min_data_in_leaf: 149
+  min_sum_hessian_in_leaf: 1.804477623298885
+  num_leaves: 363
+  objective: binary
+  seed: 0
+  verbose: -1
 
-lightgbm:
-  params:
-    bagging_fraction: 0.849285747554019
-    bagging_freq: 5
-    bagging_seed: 0
-    boosting_type: 'gbdt'
-    data_random_seed: 0
-    drop_seed: 0
-    feature_fraction: 0.8212766928844304
-    feature_fraction_seed: 0
-    lambda_l1: 0.8955546599539566
-    lambda_l2: 1.4423261095989717
-    learning_rate: 0.03
-    max_bin: 255
-    max_depth: 43
-    metric: auc
-    min_data_in_leaf: 149
-    min_sum_hessian_in_leaf: 1.804477623298885
-    num_leaves: 363
-    objective: binary
-    seed: 0
-    verbose: -1
-  numboost: 228
+xgboost_params:
+  max_depth: 4
+  min_child_weight: 6
+  gamma: 0.05
+  colsample_bytree: 1
+  subsample: 0.6
+  scale_pos_weight: 1
+  objective: binary:logistic
+  eta: 0.1
+  alpha: 0.9
+  lambda: 0.6
+  eval_metric: auc
+  metric: auc
+  silent: 1
+  verbose_eval: False
+  seed: 0
 
-xgboost:
-  params:
-    max_depth: 4
-    min_child_weight: 6
-    gamma: 0.05
-    colsample_bytree: 1
-    subsample: 0.6
-    scale_pos_weight: 1
-    objective: 'binary:logistic'
-    eta: 0.01
-    alpha: 0.9
-    lambda: 0.6
-    eval_metric: 'auc'
-    silent: 1
-    verbose_eval: False
-    seed: 0
+catboost_params:
+  max_depth: 6
+  min_data_in_leaf: 50
+  bagging_temperature: 5
+  random_strength: 5
+  rsm: 0.9
+  l2_leaf_reg: 0.5
+  leaf_estimation_iterations: 2
+  leaf_estimation_backtracking: AnyImprovement
+  random_state: 0
+  verbose: 200
+  learning_rate: 0.03
+  eval_metric: AUC
+  metric: auc
+  loss_function: Logloss
