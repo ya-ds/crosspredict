@@ -16,7 +16,7 @@ from crosspredict.report_binary import ReportBinary
 pd.set_option('display.max_columns', 999)
 pd.set_option('display.max_rows', 999)
 
-PARAMETERS_FPATH = 'tests\parameters.yml'
+PARAMETERS_FPATH = 'tests/parameters.yml'
 
 
 @pytest.fixture(scope='module')

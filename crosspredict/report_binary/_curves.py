@@ -74,7 +74,7 @@ class DistributionCurve(CurveFabric):
 
     def plot(self, ax=None, title=None, **kwargs):
         self.ax = ax
-        sns.distplot(self.series, ax=ax)
+        sns.histplot(self.series, ax=ax)
         if title:
             ax.set_title(title, fontsize=14, fontweight='bold')
         return self
