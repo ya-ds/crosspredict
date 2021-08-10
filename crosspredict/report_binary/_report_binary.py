@@ -234,7 +234,7 @@ class ReportBinary:
         ax_twinx = ax.twinx()
 
         report_object = cls._fit_plot(df, col_score, col_target, report, ax_twinx = ax_twinx, **kwargs)
-        report_object.plot(ax, title=title, **kwargs)
+        report_object.plot(ax, title=title, ax_twinx = ax_twinx, **kwargs)
         return report_object
 
     def _plot_graph(self, df, col_score, col_target, report, ax=None, title=None, **kwargs):

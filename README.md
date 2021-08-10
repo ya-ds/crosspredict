@@ -4,7 +4,7 @@
 
 * The library makes cross validation and reports generation easy
 * Easy to extend to other models
-* Supports Lightgbm, XGBoost
+* Supports Lightgbm, XGBoost, CatBoost
 * Supports different crossvalidation strategies:
     * Supports crossvalidation by users (RepeatedKFold)
     * Supports stratified crossvalidation by target column (RepeatedStratifiedKFold)

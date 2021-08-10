@@ -182,14 +182,14 @@ class CrossModelFabric(ABC):
 
         return predict
 
-    def shap(self, df: pd.DataFrame, n_samples=500):
+    def shap(self, df: pd.DataFrame, n_samples=500, figsize=(10, 10)):
         '''
 
         :param df:
         :param n_samples: количество записей которое будет семплироваться в каждом тестовом фолде для анализы shap values
         :return:
         '''
-        fig = plt.figure(figsize=(10, 10))
+        fig = plt.figure(figsize=figsize)
         log = logging.getLogger(__name__)
         shap_df_fin = pd.DataFrame(columns=['feature'])
 
@@ -209,7 +209,7 @@ class CrossModelFabric(ABC):
             model = self.models[fold]
             explainer = shap.TreeExplainer(model)
             df_sample = X_val[model.feature_name()].sample(
-                n=n_samples, random_state=0, replace=True).astype(float)
+                n=n_samples, random_state=0, replace=True)
             if self.params['metric']=='auc':
                 shap_values = explainer.shap_values(df_sample)[1]
             else:
@@ -244,7 +244,7 @@ class CrossModelFabric(ABC):
         model = self.models[0]
         explainer = shap.TreeExplainer(model)
         df_sample = test[model.feature_name()].sample(
-            n=n_samples, random_state=0, replace=True).astype(float)
+            n=n_samples, random_state=0, replace=True)
         if self.params['metric']=='auc':
             shap_values = explainer.shap_values(df_sample)[1]
         else:
