@@ -82,10 +82,10 @@ class CrossModelFabric(ABC):
             y_train, y_val = train[self.col_target], val[self.col_target]
 
             dtrain = self.get_dataset(
-                data=X_train.astype(float),
+                data=X_train,
                 label=y_train,
                 categorical_feature=self.cols_cat)
-            dvalid = self.get_dataset(data=X_val.astype(float), label=y_val,
+            dvalid = self.get_dataset(data=X_val, label=y_val,
                                       categorical_feature=self.cols_cat)
 
             if fold % self.iterator.n_splits == 0:
@@ -162,7 +162,7 @@ class CrossModelFabric(ABC):
             # Подготовка данных в нужном формате
             model = self.models[fold]
             predict.loc[X_val.index] += \
-                model.predict(X_val[model.feature_name()].astype(float),
+                model.predict(X_val[model.feature_name()],
                               num_iteration=self.num_boost_optimal) / self.iterator.n_repeats
 
         return predict
@@ -177,8 +177,7 @@ class CrossModelFabric(ABC):
 
         for fold in self.models.keys():
             model = self.models[fold]
-            predict += model.predict(test[model.feature_name()].astype(
-                float), num_iteration=self.num_boost_optimal) / models_len
+            predict += model.predict(test[model.feature_name()], num_iteration=self.num_boost_optimal) / models_len
 
         return predict
 

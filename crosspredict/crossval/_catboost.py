@@ -54,8 +54,6 @@ class CrossCatboostModel(CrossModelFabric):
 
             categorical_feature = []
 
-        data[categorical_feature] = data[categorical_feature].astype('int64')
-
         dataset = Pool(
             data=data,
             label=label,
@@ -83,10 +81,6 @@ class CrossCatboostModel(CrossModelFabric):
         if 'metric' in params.keys():
             params.pop('metric')    # Catboost haven't param 'metric', 'eval_metric' instead
 
-        # auto switch to GPU task type if cuda is available
-        if 'task_type' not in params.keys() and cuda.is_available():
-            params['task_type'] = 'GPU'
-
         # train Catboost model
         _model = cb.train(params=params,
                           dtrain=train_set,
@@ -100,19 +94,18 @@ class CrossCatboostModel(CrossModelFabric):
         model = _model.copy()
         params['metric'] = params['eval_metric']
         model.feature_name = lambda: _model.feature_names_
-        type_dict = {x: int for x in categorical_feature}
 
         if len(model.classes_) == 2:
             model.predict = lambda df, num_iteration: \
                 _model.predict(
-                    df.astype(dtype=type_dict),
+                    df,
                     ntree_end=num_iteration,
                     prediction_type='Probability'
                 )[:, 1]
         else:
             model.predict = lambda df, num_iteration: \
                 _model.predict(
-                    df.astype(dtype=type_dict),
+                    df,
                     ntree_end=num_iteration,
                     prediction_type='Probability'
                 )
