@@ -11,6 +11,7 @@
     * Supports simple crossvalidation (RepeatedKFold)
 * Easy use of target encoding with double crossvalidation
 * Supports target encoding library category_encoders
+* ML Pipeline building blocks
 
 
 ## Table of contents
@@ -96,6 +97,9 @@ model_class = CrossLightgbmModel(iterator=iter_df,
 result = model_class.fit(train)
 ```
 ## How to use
+
+**ML Pipeline Calculation** - [`ML_Pipeline.ipynb`](https://github.com//ya-ds/crosspredict/blob/master/notebooks/ML_Pipeline.ipynb)  
+Configuration file for pipeline - [`params.yaml`](https://github.com//ya-ds/crosspredict/blob/master/notebooks/params.yaml)
 
 **Plot_Reports_for_Binary_Classification_problem_example** - [`Plot_Reports_for_Binary_Classification_problem_example.ipynb`](https://github.com//ya-ds/crosspredict/blob/master/notebooks/Plot_Reports_for_Binary_Classification_problem_example.ipynb)
 
