@@ -10,6 +10,8 @@
 !Iterator_class.ipynb
 !CrossTargetEncoder_class.ipynb
 !Simple_example_in_one_Notebook.ipynb
+!ML_Pipeline.ipynb
+!params.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
