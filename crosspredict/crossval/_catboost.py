@@ -5,7 +5,6 @@ from hyperopt import hp
 from hyperopt.pyll import scope
 import catboost as cb
 from catboost import Pool
-from torch import cuda
 
 from ._crossval import CrossModelFabric
 

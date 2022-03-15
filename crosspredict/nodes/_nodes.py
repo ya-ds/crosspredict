@@ -94,7 +94,7 @@ def model_fit(df,
               'feature_len': str(len(feature_name)),
               'num_boost': str(result['num_boost'])}
     report = json.dumps(report, indent=4, sort_keys=True)
-    plt.tight_layout(True)
+    plt.tight_layout()
     return [fig, shap_df, report, model_class]
 
 
