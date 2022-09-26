@@ -114,3 +114,4 @@ Configuration file for pipeline - [`params.yaml`](https://github.com//ya-ds/cros
 ## Authors
 
 [Vladislav Boyadzhi](https://www.linkedin.com/in/vladislav-boyadzhi/)
+[Alexander Tarelkin](https://github.com/Tarelkinal)
