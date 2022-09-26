@@ -3,7 +3,21 @@ from hyperopt.pyll import scope
 import lightgbm as lgb
 from ._crossval import CrossModelFabric
 
+
 class CrossLightgbmModel(CrossModelFabric):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.params['objective'] in ('binary'):
+            assert self.params['metric'] in ('auc', 'binary_logloss', 'binary'), \
+                f"""params.objective = {self.params['objective']}, and passed params.metrics = {self.params['metric']}, but SHOULD BE one of ['auc', 'binary_logloss', 'binary']"""
+        elif self.params['objective'] in ('regression', 'regression_l1', 'mape'):
+            assert self.params['metric'] in ('l1', 'mean_absolute_error', 'mae', 'regression_l1', 'l2',
+                                              'mean_squared_error', 'mse', 'regression_l2', 'regression', 'rmse',
+                                              'root_mean_squared_error', 'l2_root'), \
+                f"""params.objective = {self.params['objective']}, and passed params.metrics = {self.params['metric']}, but SHOULD BE one of ['l1', 'mean_absolute_error', 'mae', 'regression_l1', 'l2', 'mean_squared_error', 'mse', 'regression_l2', 'regression', 'rmse', 'root_mean_squared_error', 'l2_root']"""
+        # huber, fair, poisson, quantile, , gamma, tweedie, , multiclass, multiclassova, cross_entropy, cross_entropy_lambda, lambdarank, rank_xendcg, objective_type, app, application, loss
+
     def get_hyperopt_space(self, params={}, random_state=None):
         if random_state is None:
             random_state = self.random_state

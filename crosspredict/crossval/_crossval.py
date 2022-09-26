@@ -89,7 +89,7 @@ class CrossModelFabric(ABC):
                                       categorical_feature=self.cols_cat)
 
             if fold % self.iterator.n_splits == 0:
-                log.info(f'REPEAT FOLDS {fold//self.iterator.n_splits} START')
+                log.info(f'REPEAT FOLDS {fold // self.iterator.n_splits} START')
 
             # Обучение
             evals_result = {}
@@ -115,11 +115,18 @@ class CrossModelFabric(ABC):
             self.models[fold] = model
             if self.valid:
                 # Построение прогнозов при разном виде взаимодействия
-                scores[fold] = evals_result['eval'][self.params['metric']]
+                if self.params['metric'] in ('auc', 'binary_logloss', 'binary'):
+                    scores[fold] = evals_result['eval'][self.params['metric']]
+                elif self.params['metric'] in ('l1', 'mean_absolute_error', 'mae', 'regression_l1', 'l2',
+                                                'mean_squared_error', 'mse', 'regression_l2', 'regression', 'rmse',
+                                                'root_mean_squared_error', 'l2_root'):
+                    scores[fold] = -evals_result['eval'][self.params['metric']]
+
                 best_auc = np.max(evals_result['eval'][self.params['metric']])
                 scores_avg.append(best_auc)
 
-                log.info(f'\tCROSSVALIDATION FOLD {fold%self.iterator.n_splits} ENDS with best `{self.params["metric"]}` = {best_auc}')
+                log.info(
+                    f'\tCROSSVALIDATION FOLD {fold % self.iterator.n_splits} ENDS with best `{self.params["metric"]}` = {best_auc}')
 
         if self.valid:
             self.scores = pd.DataFrame(
@@ -174,12 +181,19 @@ class CrossModelFabric(ABC):
             encoded_test = self.cross_target_encoder.predict(test)
             test = pd.concat([test, encoded_test], axis=1)
 
-
         for fold in self.models.keys():
             model = self.models[fold]
             predict += model.predict(test[model.feature_name()], num_iteration=self.num_boost_optimal) / models_len
 
         return predict
+
+    def _get_shap_values(self, explainer, df_sample):
+        if self.params['metric'] in ('auc', 'binary_logloss', 'binary'):
+            return explainer.shap_values(df_sample)[1]
+        elif self.params['metric'] in ('l1', 'mean_absolute_error', 'mae', 'regression_l1', 'l2',
+                                        'mean_squared_error', 'mse', 'regression_l2', 'regression', 'rmse',
+                                        'root_mean_squared_error', 'l2_root'):
+            return explainer.shap_values(df_sample)
 
     def shap(self, df: pd.DataFrame, n_samples=500, figsize=(10, 10)):
         '''
@@ -209,10 +223,7 @@ class CrossModelFabric(ABC):
             explainer = shap.TreeExplainer(model)
             df_sample = X_val[model.feature_name()].sample(
                 n=n_samples, random_state=0, replace=True)
-            if self.params['metric']=='auc':
-                shap_values = explainer.shap_values(df_sample)[1]
-            else:
-                shap_values = explainer.shap_values(df_sample)
+            shap_values = self._get_shap_values(explainer, df_sample)
             shap_df = pd.DataFrame(zip(model.feature_name(), np.mean(
                 np.abs(shap_values), axis=0)), columns=['feature', 'shap_' + str(fold)])
             shap_df_fin = pd.merge(shap_df_fin, shap_df,
@@ -244,15 +255,10 @@ class CrossModelFabric(ABC):
         explainer = shap.TreeExplainer(model)
         df_sample = test[model.feature_name()].sample(
             n=n_samples, random_state=0, replace=True)
-        if self.params['metric']=='auc':
-            shap_values = explainer.shap_values(df_sample)[1]
-        else:
-            shap_values = explainer.shap_values(df_sample)
+        shap_values = self._get_shap_values(explainer, df_sample)
         shap_df = pd.DataFrame(zip(model.feature_name(), np.mean(
             np.abs(shap_values), axis=0)), columns=['feature', 'shap_'])
         shap_df_fin = pd.merge(shap_df_fin, shap_df, how='outer', on='feature')
 
         shap.summary_plot(shap_values, df_sample, show=False, )
         return fig
-
-

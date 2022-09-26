@@ -30,7 +30,8 @@ def get_params():
 @pytest.fixture(scope='module')
 def onetwotrip_dataset():
 
-    file_url = 'https://boosters.pro/api/ch/files/pub/onetwotrip_challenge_train.csv'
+    # file_url = 'https://boosters.pro/api/ch/files/pub/onetwotrip_challenge_train.csv'
+    file_url = 'https://github.com/artem-panin/onetwotrip_contest/raw/master/input/onetwotrip_challenge_train.csv'
     file_path = 'tests/onetwotrip_challenge_train.csv'
 
     if not os.path.isfile(file_path):
