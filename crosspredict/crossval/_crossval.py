@@ -24,6 +24,15 @@ class CrossModelFabric(ABC):
                  ):
 
         self.params = params
+        if self.params['metric'] in ('l2', 'mean_squared_error', 'mse', 'regression_l2'):
+            self.params['metric'] = 'l2'
+        elif self.params['metric'] in ('l1', 'mean_absolute_error', 'mae', 'regression_l1', 'regression'):
+            self.params['metric'] = 'l1'
+        elif self.params['metric'] in ('rmse', 'root_mean_squared_error', 'l2_root'):
+            self.params['metric'] = 'rmse'
+        elif self.params['metric'] in ('binary_logloss', 'binary'):
+            self.params['metric'] = 'binary_logloss'
+
         self.feature_name = feature_name
         self.cols_cat = cols_cat
         self.num_boost_round = num_boost_round
@@ -115,12 +124,13 @@ class CrossModelFabric(ABC):
             self.models[fold] = model
             if self.valid:
                 # Построение прогнозов при разном виде взаимодействия
-                if self.params['metric'] in ('auc', 'binary_logloss', 'binary'):
+                if self.params['metric'] in ('auc'):
                     scores[fold] = evals_result['eval'][self.params['metric']]
-                elif self.params['metric'] in ('l1', 'mean_absolute_error', 'mae', 'regression_l1', 'l2',
-                                                'mean_squared_error', 'mse', 'regression_l2', 'regression', 'rmse',
-                                                'root_mean_squared_error', 'l2_root'):
-                    scores[fold] = -evals_result['eval'][self.params['metric']]
+                elif self.params['metric'] in (
+                'binary_logloss', 'binary', 'l1', 'mean_absolute_error', 'mae', 'regression_l1', 'l2',
+                'mean_squared_error', 'mse', 'regression_l2', 'regression', 'rmse',
+                'root_mean_squared_error', 'l2_root'):
+                    scores[fold] = [-1 * x for x in -1 * evals_result['eval'][self.params['metric']]]
 
                 best_auc = np.max(evals_result['eval'][self.params['metric']])
                 scores_avg.append(best_auc)
@@ -191,8 +201,8 @@ class CrossModelFabric(ABC):
         if self.params['metric'] in ('auc', 'binary_logloss', 'binary'):
             return explainer.shap_values(df_sample)[1]
         elif self.params['metric'] in ('l1', 'mean_absolute_error', 'mae', 'regression_l1', 'l2',
-                                        'mean_squared_error', 'mse', 'regression_l2', 'regression', 'rmse',
-                                        'root_mean_squared_error', 'l2_root'):
+                                       'mean_squared_error', 'mse', 'regression_l2', 'regression', 'rmse',
+                                       'root_mean_squared_error', 'l2_root'):
             return explainer.shap_values(df_sample)
 
     def shap(self, df: pd.DataFrame, n_samples=500, figsize=(10, 10)):
