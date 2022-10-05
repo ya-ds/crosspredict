@@ -19,7 +19,8 @@ def make_report(template, report):
     readme_rendered = t.render(**report)
     return readme_rendered
 
-def _check_features(df,feature_name,cols_exclude,cols_cat,lgb_params):
+
+def _check_features(df, feature_name, cols_exclude, cols_cat, lgb_params):
     logging.basicConfig(level=logging.INFO)
     log = logging.getLogger(__name__)
     if feature_name:
@@ -28,18 +29,18 @@ def _check_features(df,feature_name,cols_exclude,cols_cat,lgb_params):
         feature_name = [col for col in df.columns if col not in cols_exclude]
     assert feature_name, 'You should pass either `feature_name` or `cols_exclude`'
     log.info('len(feature_name): ' + str(len(feature_name)))
-    
+
     if cols_cat:
         cols_cat = [i for i in cols_cat if i in feature_name]
-        log.info('len(cols_cat): '+ str(len(cols_cat)))
+        log.info('len(cols_cat): ' + str(len(cols_cat)))
     else:
         log.info('len(cols_cat): 0')
-        
-        
+
     if lgb_params:
         if type(lgb_params) == str:
             lgb_params = json.loads(lgb_params)["params"]
-    return feature_name,cols_exclude,cols_cat,lgb_params
+    return feature_name, cols_exclude, cols_cat, lgb_params
+
 
 def model_fit(df,
               lgb_params: Union[Dict, Union[str, bytes]],
@@ -57,9 +58,10 @@ def model_fit(df,
               ):
     logging.basicConfig(level=logging.INFO)
     log = logging.getLogger(__name__)
-    
-    feature_name,cols_exclude,cols_cat,lgb_params = _check_features(df,feature_name,cols_exclude,cols_cat,lgb_params)
-    
+
+    feature_name, cols_exclude, cols_cat, lgb_params = _check_features(df, feature_name, cols_exclude, cols_cat,
+                                                                       lgb_params)
+
     params = lgb_params
 
     iter_df = Iterator(n_repeats=n_repeats,
@@ -108,11 +110,10 @@ def forward_selection(df,
                       cols_cat,
                       feature_name,
                       **kwargs):
-
     logging.basicConfig(level=logging.INFO)
     log = logging.getLogger(__name__)
 
-    feature_name,cols_exclude,cols_cat,_ = _check_features(df,feature_name,cols_exclude,cols_cat,None)
+    feature_name, cols_exclude, cols_cat, _ = _check_features(df, feature_name, cols_exclude, cols_cat, None)
 
     iter_df = Iterator(n_repeats=n_repeats,
                        n_splits=n_splits,
@@ -129,11 +130,11 @@ def forward_selection(df,
 
         top_feature = None
         top_score = 0
-        
+
         for i, f in enumerate(set(feature_name) - set(selected_features)):
             current_features = selected_features + [f]
             log.info(current_features)
-            _,_,cols_cat,_ = _check_features(df,current_features,None,cols_cat,None)
+            _, _, cols_cat, _ = _check_features(df, current_features, None, cols_cat, None)
             model_class = CrossLightgbmModel(iterator=iter_df,
                                              feature_name=current_features,
                                              params={
@@ -153,7 +154,6 @@ def forward_selection(df,
                                              cols_cat=cols_cat
                                              )
 
-
             result = model_class.fit(df)
             score = result['score_max']
 
@@ -164,7 +164,7 @@ def forward_selection(df,
         log.info("{} features left to select ...".format(len(set(feature_name) - set(selected_features)) - 1))
         scores.append(top_score)
         selected_features.append(top_feature)
-            
+
         log.info(top_score)
         log.info(top_feature)
         plt.plot(scores)
@@ -177,24 +177,25 @@ def forward_selection(df,
     plt.show()
 
     scores_df = pd.DataFrame(scores, columns=["score"])
-    scores_df = pd.DataFrame(zip(selected_features, scores), columns=["index","score"])
-    
+    scores_df = pd.DataFrame(zip(selected_features, scores), columns=["index", "score"])
+
     scores_df['score2'] = scores_df['score'].shift(1)
     scores_df['score_diff'] = scores_df['score'] - scores_df['score2']
     scores_df['score_diff_flag'] = scores_df['score_diff'] < 0.00005
-    
+
     top_features = scores_df[scores_df['score_diff_flag']].index[0]
 
     top_features = json.dumps({"feature_selection": str(top_features)}, indent=4, sort_keys=True)
     return [scores_df, top_features]
 
 
-def onefactor(df_adv, shap_df, col_date, col_target, report_directory, output_file='README_onefactor.md', top_features=20):
+def onefactor(df_adv, shap_df, col_date, col_target, report_directory, output_file='README_onefactor.md',
+              top_features=20):
     logging.basicConfig(level=logging.INFO)
     log = logging.getLogger(__name__)
-    report_text=''
+    report_text = ''
     for row in shap_df[:top_features].iterrows():
-        text='\n'
+        text = '\n'
         text += f'Feature name = {row[1]["feature"]}  \n'
         text += f'Shap Value = {row[1]["mean"]}  \n'
         text += f'![onefactor]({row[1]["feature"]}.png)  \n'
@@ -203,7 +204,6 @@ def onefactor(df_adv, shap_df, col_date, col_target, report_directory, output_fi
         col_name = row[1]['feature']
 
         n_groups = 4
-
 
         splits = np.arange(0, n_groups + 1) / n_groups
         if df_adv[col_name].nunique() > n_groups:
@@ -249,20 +249,22 @@ def onefactor(df_adv, shap_df, col_date, col_target, report_directory, output_fi
 
     with open(os.path.join(report_directory, output_file), 'w') as f:
         f.write(report_text)
-        
+
     return report_text
-    
 
 
-def hyperopt_fit(df,n_repeats,n_splits,hyperopt_trials,num_boost,col_target, col_client,cv_byclient, cols_cat=None, feature_name=None,cols_exclude=None,**kwargs):
+def hyperopt_fit(df, n_repeats, n_splits, hyperopt_trials, num_boost, col_target, col_client, cv_byclient,
+                 cols_cat=None, feature_name=None, cols_exclude=None, **kwargs):
     logging.basicConfig(level=logging.INFO)
     log = logging.getLogger(__name__)
 
-    feature_name,cols_exclude,cols_cat,_ = _check_features(df,feature_name,cols_exclude,cols_cat,None)
+    feature_name, cols_exclude, cols_cat, _ = _check_features(df, feature_name, cols_exclude, cols_cat, None)
 
     space = CrossLightgbmModel(iterator=None,
                                feature_name=feature_name,
-                               params=None,
+                               params={
+                                   'metric': 'auc',
+                                   'objective': 'binary'},
                                num_boost_round=num_boost,
                                early_stopping_rounds=50,
                                valid=True,
@@ -303,11 +305,12 @@ def hyperopt_fit(df,n_repeats,n_splits,hyperopt_trials,num_boost,col_target, col
     return results
 
 
-def model_single_fit(df, lgb_params, col_target, num_boost, cols_cat=None, cols_exclude=None, feature_name=None, **kwargs):
+def model_single_fit(df, lgb_params, col_target, num_boost, cols_cat=None, cols_exclude=None, feature_name=None,
+                     **kwargs):
     logging.basicConfig(level=logging.INFO)
     log = logging.getLogger(__name__)
 
-    feature_name,cols_exclude,cols_cat,_ = _check_features(df,feature_name,cols_exclude,cols_cat,None)
+    feature_name, cols_exclude, cols_cat, _ = _check_features(df, feature_name, cols_exclude, cols_cat, None)
 
     dataset = lgb.Dataset(
         data=df[feature_name],
