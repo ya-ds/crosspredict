@@ -155,7 +155,7 @@ def forward_selection(df,
                                              )
 
             result = model_class.fit(df)
-            score = result['score_max']
+            score = -result['loss']
 
             if score > top_score:
                 top_score = score

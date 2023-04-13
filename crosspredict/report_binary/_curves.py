@@ -89,7 +89,7 @@ class GenGINICurve(CurveFabric):
 
     def fit(self, df):
         self.count = df.groupby(self._col_generation_deals).size()
-        self.series_auc = df[~df[self.col_score].isnull()].groupby(self._col_generation_deals).apply(
+        self.series_auc = df[(~df[self.col_score].isnull()) & (~df[self.col_target].isnull())].groupby(self._col_generation_deals).apply(
             lambda x: 100 * (2 * roc_auc_score(x[self.col_target], x[self.col_score]) - 1) if len(
                 x[self.col_target].unique()) > 1 else None)
         self.series_auc = self.series_auc.reindex(index=self.count.index)
