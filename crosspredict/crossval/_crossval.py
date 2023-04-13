@@ -142,15 +142,25 @@ class CrossModelFabric(ABC):
             self.scores = pd.DataFrame(
                 dict([(k, pd.Series(v)) for k, v in scores.items()]))
             mask = self.scores.isnull().sum(axis=1) == 0
-            self.num_boost_optimal = np.argmax(
-                self.scores[mask].mean(axis=1).values)
-            self.score_max = self.scores[mask].mean(
-                axis=1)[self.num_boost_optimal]
+            if self.params['metric'] in ('auc'):
+                self.num_boost_optimal = np.argmax(self.scores[mask].mean(axis=1).values)
+
+            elif self.params['metric'] in (
+                'binary_logloss', 'binary', 'l1', 'mean_absolute_error', 'mae', 'regression_l1', 'l2',
+                'mean_squared_error', 'mse', 'regression_l2', 'regression', 'rmse',
+                'root_mean_squared_error', 'l2_root'):
+                self.num_boost_optimal = np.argmin(self.scores[mask].mean(axis=1).values)
+
+            self.score_max = self.scores[mask].mean(axis=1)[self.num_boost_optimal]
+            loss = self.score_max
+            if self.params['metric'] in ('auc'):
+                loss = -self.score_max
+
             # self.score_max = np.mean(scores_avg)
             self.std = self.scores[mask].std(axis=1)[self.num_boost_optimal]
             # self.std = np.std(scores_avg)
 
-            result = {'loss': -self.score_max,
+            result = {'loss': loss,
                       'status': STATUS_OK,
                       'std': self.std,
                       'score_max': self.score_max,
