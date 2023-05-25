@@ -130,7 +130,7 @@ class CrossModelFabric(ABC):
                 'binary_logloss', 'binary', 'l1', 'mean_absolute_error', 'mae', 'regression_l1', 'l2',
                 'mean_squared_error', 'mse', 'regression_l2', 'regression', 'rmse',
                 'root_mean_squared_error', 'l2_root'):
-                    scores[fold] = [-1 * x for x in -1 * evals_result['eval'][self.params['metric']]]
+                    scores[fold] = [-1 * x for x in evals_result['eval'][self.params['metric']]]
 
                 best_auc = np.max(evals_result['eval'][self.params['metric']])
                 scores_avg.append(best_auc)
@@ -142,15 +142,7 @@ class CrossModelFabric(ABC):
             self.scores = pd.DataFrame(
                 dict([(k, pd.Series(v)) for k, v in scores.items()]))
             mask = self.scores.isnull().sum(axis=1) == 0
-            if self.params['metric'] in ('auc'):
-                self.num_boost_optimal = np.argmax(self.scores[mask].mean(axis=1).values)
-
-            elif self.params['metric'] in (
-                'binary_logloss', 'binary', 'l1', 'mean_absolute_error', 'mae', 'regression_l1', 'l2',
-                'mean_squared_error', 'mse', 'regression_l2', 'regression', 'rmse',
-                'root_mean_squared_error', 'l2_root'):
-                self.num_boost_optimal = np.argmin(self.scores[mask].mean(axis=1).values)
-
+            self.num_boost_optimal = np.argmax(self.scores[mask].mean(axis=1).values)
             self.score_max = self.scores[mask].mean(axis=1)[self.num_boost_optimal]
             loss = self.score_max
             if self.params['metric'] in ('auc'):
@@ -191,7 +183,6 @@ class CrossModelFabric(ABC):
             predict.loc[X_val.index] += \
                 model.predict(X_val[model.feature_name()],
                               num_iteration=self.num_boost_optimal) / self.iterator.n_repeats
-
         return predict
 
     def predict(self, test):
