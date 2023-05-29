@@ -32,6 +32,8 @@ class CrossModelFabric(ABC):
             self.params['metric'] = 'rmse'
         elif self.params['metric'] in ('binary_logloss', 'binary'):
             self.params['metric'] = 'binary_logloss'
+        elif self.params['metric'] in ('multi_logloss', 'multiclass', 'softmax', 'multiclassova', 'multiclass_ova', 'ova', 'ovr'):
+            self.params['metric'] = 'multi_logloss'
 
         self.feature_name = feature_name
         self.cols_cat = cols_cat
@@ -129,7 +131,8 @@ class CrossModelFabric(ABC):
                 elif self.params['metric'] in (
                 'binary_logloss', 'binary', 'l1', 'mean_absolute_error', 'mae', 'regression_l1', 'l2',
                 'mean_squared_error', 'mse', 'regression_l2', 'regression', 'rmse',
-                'root_mean_squared_error', 'l2_root'):
+                'root_mean_squared_error', 'l2_root',
+                'multi_logloss', 'multiclass', 'softmax', 'multiclassova', 'multiclass_ova', 'ova', 'ovr'):
                     scores[fold] = [-1 * x for x in evals_result['eval'][self.params['metric']]]
 
                 best_auc = np.max(evals_result['eval'][self.params['metric']])
@@ -203,7 +206,8 @@ class CrossModelFabric(ABC):
             return explainer.shap_values(df_sample)[1]
         elif self.params['metric'] in ('l1', 'mean_absolute_error', 'mae', 'regression_l1', 'l2',
                                        'mean_squared_error', 'mse', 'regression_l2', 'regression', 'rmse',
-                                       'root_mean_squared_error', 'l2_root'):
+                                       'root_mean_squared_error', 'l2_root',
+                'multi_logloss', 'multiclass', 'softmax', 'multiclassova', 'multiclass_ova', 'ova', 'ovr'):
             return explainer.shap_values(df_sample)
 
     def shap(self, df: pd.DataFrame, n_samples=500, figsize=(10, 10)):

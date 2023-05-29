@@ -14,7 +14,8 @@ class CrossLightgbmModel(CrossModelFabric):
         elif self.params['objective'] in ('regression', 'regression_l1', 'mape'):
             assert self.params['metric'] in ('l1', 'mean_absolute_error', 'mae', 'regression_l1', 'l2',
                                               'mean_squared_error', 'mse', 'regression_l2', 'regression', 'rmse',
-                                              'root_mean_squared_error', 'l2_root'), \
+                                              'root_mean_squared_error', 'l2_root',
+                                             'multi_logloss', 'multiclass', 'softmax', 'multiclassova', 'multiclass_ova', 'ova', 'ovr'), \
                 f"""params.objective = {self.params['objective']}, and passed params.metrics = {self.params['metric']}, but SHOULD BE one of ['l1', 'mean_absolute_error', 'mae', 'regression_l1', 'l2', 'mean_squared_error', 'mse', 'regression_l2', 'regression', 'rmse', 'root_mean_squared_error', 'l2_root']"""
         # huber, fair, poisson, quantile, , gamma, tweedie, , multiclass, multiclassova, cross_entropy, cross_entropy_lambda, lambdarank, rank_xendcg, objective_type, app, application, loss
 
